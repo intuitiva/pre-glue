@@ -35,6 +35,7 @@ provider:
     Action:
       - s3:GetObject # this includes head object
       - s3:PutObject
+      - s3:ListBucket
     Resource:
       - "*"
   - Effect: Allow
