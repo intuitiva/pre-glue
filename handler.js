@@ -44,11 +44,7 @@ module.exports.s3fileparser = (event, context, callback) => {
           };
 
     //Finally get the HEAD for the S3 Object
-    console.log("before getting the HEAD for the S3 Object")
-    console.log(s3bucket);
-    console.log(s3filekey);
     var head = await s3.headObject(s3params).promise();
-    console.log("after getting the HEAD for the S3 Object")
     if(head && head.Metadata)
     {
       let file_public_url = "https://" + s3bucket + ".s3.amazonaws.com/" + s3filekey;
@@ -77,7 +73,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "uuid": id,
                 "entity_id": entity,
                 "status": "original file received", 
-                "source": "xml->json lambda",
+                "source": "Pre-Glue lambda (XML -> JSON)",
                 "percentage_completed": "10"
               }
           };
@@ -130,7 +126,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                               
                               postdata = {
                                 "external_id" : data.JobRunId,
-                                "source": "Lambda for moving files", 
+                                "source": "Pre-Glue lambda (XML -> JSON)", 
                                 "status": "finished moving files, triggering glue job", 
                                 "percentage_completed": "30"
                               };
@@ -193,7 +189,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "uuid": id, 
                 "entity_id": entity,
                 "status": "original file received", 
-                "source": "csv->json lambda",
+                "source": "Pre-Glue lambda (CSV)",
                 "percentage_completed": "10"
               }
           };
@@ -224,7 +220,7 @@ module.exports.s3fileparser = (event, context, callback) => {
 
                       s3.putObject({ Bucket: process.env.AWS_S3_BUCKET_DESTINATION, 
                           Key: s3filekey, Body: data }, function(err, data) {
-                          console.log('uploaded json file') // File uploads incorrectly.
+                          console.log('uploaded CSV file to new destination') // File uploads incorrectly.
 
                           //Trigger AWS Glue Job
                           glue.startJobRun({ JobName: process.env.AWS_GLUE_JOB_NAME }, async function(err, data) {
@@ -235,10 +231,11 @@ module.exports.s3fileparser = (event, context, callback) => {
                               //Call PUT api
                               postdata = {
                                 "external_id": data.JobRunId,
-                                "source": "Lambda for moving files", 
+                                "source": "Pre-Glue lambda (CSV)", 
                                 "status": "finished moving files, triggering glue job", 
                                 "percentage_completed": "30"
                               };
+                              console.log(postdata);
 
                               options.data = postdata;
                               options.url = process.env.ZAURU_PUT_URL + id + ".json";
