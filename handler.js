@@ -22,7 +22,7 @@ module.exports.s3fileparser = (event, context, callback) => {
 
   let myProm = new Promise(async function(resolve, reject){
 
-    console.log("Event==>" + JSON.stringify(event))
+    console.log("Event ==>" + JSON.stringify(event))
 
     var id = uuid.v1();//Create Unique ID
 
@@ -42,9 +42,10 @@ module.exports.s3fileparser = (event, context, callback) => {
             'X-User-Token': process.env.ZAURU_HEADER_USER_TOKEN
           };
 
-    //Finally get the HEAD for the s3Object
+    //Finally get the HEAD for the S3 Object
+    console.log("before getting the HEAD for the S3 Object")
     var head = await s3.headObject(s3params).promise();
-    
+    console.log("after getting the HEAD for the S3 Object")
     if(head && head.Metadata)
     {
       let file_public_url = "https://" + s3bucket + ".s3.amazonaws.com/" + s3filekey;
@@ -71,7 +72,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "token": usertoken, 
                 "email": user, 
                 "uuid": id,
-                "entity": entity,
+                "entity_id": entity,
                 "status": "original file received", 
                 "source": "xml->json lambda",
                 "percentage_completed": "10"
@@ -187,7 +188,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "token": usertoken, 
                 "email": user, 
                 "uuid": id, 
-                "entity": entity,
+                "entity_id": entity,
                 "status": "original file received", 
                 "source": "csv->json lambda",
                 "percentage_completed": "10"

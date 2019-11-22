@@ -28,15 +28,13 @@ provider:
   - Effect: Allow
     Action:
       - logs:CreateLogStream
-      - logs:PutLogEvents
-      - logs:HeadObject      
+      - logs:PutLogEvents     
     Resource:
       - "*"
   - Effect: Allow
     Action:
-      - s3:GetObject
+      - s3:GetObject # this includes head object
       - s3:PutObject
-      - s3:HeadObject      
     Resource:
       - "*"
   - Effect: Allow
