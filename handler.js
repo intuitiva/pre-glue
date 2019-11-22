@@ -230,10 +230,13 @@ module.exports.s3fileparser = (event, context, callback) => {
                               console.log(data);           // successful response  
                               //Call PUT api
                               postdata = {
-                                "external_id": data.JobRunId,
-                                "source": "Pre-Glue lambda (CSV)", 
-                                "status": "finished moving files, triggering glue job", 
-                                "percentage_completed": "30"
+                                "data_import_job": 
+                                  {
+                                    "external_id": data.JobRunId,
+                                    "source": "Pre-Glue lambda (CSV)", 
+                                    "status": "finished moving files, triggering glue job", 
+                                    "percentage_completed": "30"
+                                  }
                               };
                               console.log(postdata);
 
