@@ -1,0 +1,7 @@
+.env
+package-lock.json
+# package directories
+node_modules
+
+# Serverless directories
+.serverless

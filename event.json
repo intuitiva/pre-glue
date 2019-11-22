@@ -1,0 +1,38 @@
+{
+    "Records": [
+        {
+            "eventVersion": "2.1",
+            "eventSource": "aws:s3",
+            "awsRegion": "us-east-1",
+            "eventTime": "2019-09-05T07:31:12.947Z",
+            "eventName": "ObjectCreated:Put",
+            "userIdentity": {
+                "principalId": "A3CK1Y6BGSO2GI"
+            },
+            "requestParameters": {
+                "sourceIPAddress": "103.249.234.245"
+            },
+            "responseElements": {
+                "x-amz-request-id": "5A9BB90CD2A4E881",
+                "x-amz-id-2": "oQhAmOk2UquCsan0nBgxfde0UId3oSYbMZ9JsWzESDMTQrQIA1zmUm80L70LGxi0gdAK49j/A2w="
+            },
+            "s3": {
+                "s3SchemaVersion": "1.0",
+                "configurationId": "parser",
+                "bucket": {
+                    "name": "srcbuckett",
+                    "ownerIdentity": {
+                        "principalId": "A3CK1Y6BGSO2GI"
+                    },
+                    "arn": "arn:aws:s3:::srcbuckett"
+                },
+                "object": {
+                    "key": "xml/2019-02-26.975.1.xml.gz",
+                    "size": 6076074,
+                    "eTag": "1aaa9da7207fef544e42a16284a24db5",
+                    "sequencer": "005D70B9C0B9C8D426"
+                }
+            }
+        }
+    ]
+}
