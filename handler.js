@@ -29,6 +29,7 @@ module.exports.s3fileparser = (event, context, callback) => {
     //Get S3 information     
     var s3bucket = event.Records[0].s3.bucket.name;
     var s3filekey = event.Records[0].s3.object.key;
+    s3filekey = decodeURIComponent(s3filekey.replace(/\+/g, ' '))
     var s3filename = s3filekey.split("/");
     s3filename = s3filename.pop();
 
@@ -44,6 +45,8 @@ module.exports.s3fileparser = (event, context, callback) => {
 
     //Finally get the HEAD for the S3 Object
     console.log("before getting the HEAD for the S3 Object")
+    console.log(s3bucket);
+    console.log(s3filekey);
     var head = await s3.headObject(s3params).promise();
     console.log("after getting the HEAD for the S3 Object")
     if(head && head.Metadata)
