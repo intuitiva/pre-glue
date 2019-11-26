@@ -85,11 +85,9 @@ module.exports.s3fileparser = (event, context, callback) => {
           url: process.env.ZAURU_POST_URL
         };
 
-        console.log("Post Options==>" + JSON.stringify( options ))
-
-        //Calling POST API
+        // Calling POST API
         axios(options)
-        .then(function (response) {//If successful api
+        .then(function (response) { // if successfully called POST API
            
           //GetObject FILE FROM S3 buckets
           let file = fs.createWriteStream("/tmp/"+ s3filename);
@@ -188,7 +186,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "email": user, 
                 "uuid": id, 
                 "entity_id": entity,
-                "status": "original file received", 
+                "status": "PASO 1: original file received", 
                 "source": "Pre-Glue lambda (CSV)",
                 "percentage_completed": "10"
               }
@@ -202,9 +200,9 @@ module.exports.s3fileparser = (event, context, callback) => {
         };
 
         //Calling POST API
-        axios(options).then(function (response) {//If successful api
+        axios(options).then(function (response) { // If successfully called POST API
 
-          console.log("1.POST API SUCCESS==")
+          console.log("1). POST API SUCCESS==")
            
           //READ FILE FROM S3
           let file = fs.createWriteStream("/tmp/"+ s3filename);
@@ -224,12 +222,40 @@ module.exports.s3fileparser = (event, context, callback) => {
 
                           //Trigger AWS Glue Job
                           glue.startJobRun({ JobName: process.env.AWS_GLUE_JOB_NAME }, async function(err, data) {
-                            if (err) console.log(err, err.stack); // an error occurred
+                            if (err) {
+                              console.log(err, err.stack); // an error occurred
+                              //Call PUT api
+                              putdata = {
+                                "data_import_job": 
+                                  {
+                                    "source": "Pre-Glue lambda (CSV)", 
+                                    "status": "glue.startJobRun "+err.stack, 
+                                    "percentage_completed": "30",
+                                    "is_error": true
+                                  }
+                              };
+
+                              options.data = putdata;
+                              options.url = process.env.ZAURU_PUT_URL + id + ".json";
+                              options.method = "PUT";
+
+                              //Call PUT API
+                              await axios(options)
+                              .then(function (response) {
+
+                                console.log("PUT API Success SUCCESS==")
+                                callback(null, "Successfully Done!")
+                              })
+                              .catch(function (error) { //If error
+                                console.log(error);
+                                callback(null, "Error")
+                              });
+                            }
                             else
                             {
                               console.log(data);           // successful response  
                               //Call PUT api
-                              postdata = {
+                              putdata = {
                                 "data_import_job": 
                                   {
                                     "external_id": data.JobRunId,
@@ -238,9 +264,8 @@ module.exports.s3fileparser = (event, context, callback) => {
                                     "percentage_completed": "30"
                                   }
                               };
-                              console.log(postdata);
 
-                              options.data = postdata;
+                              options.data = putdata;
                               options.url = process.env.ZAURU_PUT_URL + id + ".json";
                               options.method = "PUT";
 
