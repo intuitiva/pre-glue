@@ -202,7 +202,7 @@ module.exports.s3fileparser = (event, context, callback) => {
         //Calling POST API
         axios(options).then(function (response) { // If successfully called POST API
 
-          console.log("1). POST API SUCCESS==")
+          console.log("1). POST to Zauru API success!")
            
           //READ FILE FROM S3
           let file = fs.createWriteStream("/tmp/"+ s3filename);
@@ -211,21 +211,21 @@ module.exports.s3fileparser = (event, context, callback) => {
           //Callback for S3 Success Operation
           file.on('close', async function(){
 
-            console.log('s3 file read done and downloaded ==' + "/tmp/"+s3filename);
+            console.log('2) S3 file read and downloaded == ' + "/tmp/"+s3filename);
 
               //Read Downloaded File and Upload to S3 Destination bucket
               fs.readFile("/tmp/"+ s3filename, function(err, data) {
 
                       s3.putObject({ Bucket: process.env.AWS_S3_BUCKET_DESTINATION, 
                           Key: s3filekey, Body: data }, function(err, data) {
-                          console.log('uploaded CSV file to new destination') // File uploads incorrectly.
+                          console.log('3) Uploaded CSV file to new destination')
 
                           //Trigger AWS Glue Job
                           glue.startJobRun({ JobName: process.env.AWS_GLUE_JOB_NAME }, async function(err, data) {
                             if (err) {
-                              console.log(err, err.stack); // an error occurred
+                              console.log("glue.startJobRun " + err.stack); // an error occurred
                               //Call PUT api
-                              putdata = {
+                              var putdata = {
                                 "data_import_job": 
                                   {
                                     "source": "Pre-Glue lambda (CSV)", 
@@ -255,7 +255,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                             {
                               console.log(data);           // successful response  
                               //Call PUT api
-                              putdata = {
+                              var putdata = {
                                 "data_import_job": 
                                   {
                                     "external_id": data.JobRunId,

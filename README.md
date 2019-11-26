@@ -12,8 +12,8 @@ El AWS Glue Job (ETL) recibe varios parámetros:
 
 Este proyecto está hecho como una GRAN función AWS lambda en Node.js donde se manejarán ambos casos:
 
-1. XML.GZ -> Zauru -> JSON -> Glue -> Zauru
-2. TXT -> Zauru -> Glue -> Zauru
+1. Para el .XML.GZ: Zauru API (recibió archivo) -> JSON -> Mover a otro bucket-> Glue -> Zauru API (llamó a Glue)
+2. Para el .TXT: Zauru API (recibió archivo) -> Mover a otro bucket -> Glue -> Zauru API (llamó a Glue)
 
 ## Deploy con Serverless Framework
 1. npm install
