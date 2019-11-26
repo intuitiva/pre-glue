@@ -72,7 +72,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "email": user, 
                 "uuid": id,
                 "entity_id": entity,
-                "status": "original file received", 
+                "status": "PASO 1) archivo original recibido", 
                 "source": "Pre-Glue lambda (XML -> JSON)",
                 "percentage_completed": "10"
               }
@@ -117,7 +117,36 @@ module.exports.s3fileparser = (event, context, callback) => {
 
                           //Trigger AWS Glue Job
                           glue.startJobRun({ JobName: process.env.AWS_GLUE_JOB_NAME }, async function(err, data) {
-                            if (err) console.log(err, err.stack); // an error occurred
+                            if (err) {
+                              console.log(err, err.stack); // an error occurred
+
+                              //Call PUT api
+                              var putdata = {
+                                "data_import_job": 
+                                  {
+                                    "source": "Pre-Glue lambda (CSV)", 
+                                    "status": "glue.startJobRun > "+err.stack, 
+                                    "percentage_completed": "30",
+                                    "is_error": true
+                                  }
+                              };
+
+                              options.data = putdata;
+                              options.url = process.env.ZAURU_PUT_URL + id + ".json";
+                              options.method = "PUT";
+
+                              //Call PUT API
+                              await axios(options)
+                              .then(function (response) {
+
+                                console.log("PUT API Success SUCCESS==")
+                                callback(null, "Successfully Done!")
+                              })
+                              .catch(function (error) { //If error
+                                console.log(error);
+                                callback(null, "Error")
+                              });
+                            }
                             else
                             {
                               console.log(data);           // successful response  
@@ -125,7 +154,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                               postdata = {
                                 "external_id" : data.JobRunId,
                                 "source": "Pre-Glue lambda (XML -> JSON)", 
-                                "status": "finished moving files, triggering glue job", 
+                                "status": "PASO 2) archivo movido y convertido y el JOB Glue ya se llamó", 
                                 "percentage_completed": "30"
                               };
 
@@ -136,7 +165,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                               //Call PUT APIs
                               await axios(options)
                               .then(function (response) {
-                                console.log("PUT API Success SUCCESS==")
+                                console.log("PUT API Success")
                                 callback(null, "Successfully Done!")
                               })
                               .catch(function (error) {
@@ -186,7 +215,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "email": user, 
                 "uuid": id, 
                 "entity_id": entity,
-                "status": "PASO 1: original file received", 
+                "status": "PASO 1) archivo original recibido", 
                 "source": "Pre-Glue lambda (CSV)",
                 "percentage_completed": "10"
               }
@@ -223,13 +252,13 @@ module.exports.s3fileparser = (event, context, callback) => {
                           //Trigger AWS Glue Job
                           glue.startJobRun({ JobName: process.env.AWS_GLUE_JOB_NAME }, async function(err, data) {
                             if (err) {
-                              console.log("glue.startJobRun " + err.stack); // an error occurred
+                              console.log("glue.startJobRun > " + err.stack); // an error occurred
                               //Call PUT api
                               var putdata = {
                                 "data_import_job": 
                                   {
                                     "source": "Pre-Glue lambda (CSV)", 
-                                    "status": "glue.startJobRun "+err.stack, 
+                                    "status": "ERROR: glue.startJobRun > "+err.stack, 
                                     "percentage_completed": "30",
                                     "is_error": true
                                   }
@@ -243,7 +272,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                               await axios(options)
                               .then(function (response) {
 
-                                console.log("PUT API Success SUCCESS==")
+                                console.log("PUT API Success")
                                 callback(null, "Successfully Done!")
                               })
                               .catch(function (error) { //If error
@@ -260,7 +289,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                                   {
                                     "external_id": data.JobRunId,
                                     "source": "Pre-Glue lambda (CSV)", 
-                                    "status": "finished moving files, triggering glue job", 
+                                    "status": "PASO 2) archivo movido y el JOB Glue ya se llamó", 
                                     "percentage_completed": "30"
                                   }
                               };
@@ -273,10 +302,10 @@ module.exports.s3fileparser = (event, context, callback) => {
                               await axios(options)
                               .then(function (response) {
 
-                                console.log("PUT API Success SUCCESS==")
+                                console.log("PUT API Success")
                                 callback(null, "Successfully Done!")
                               })
-                              .catch(function (error) { //If error
+                              .catch(function (error) { // If error
                                 console.log(error);
                                 callback(null, "Error")
                               });
