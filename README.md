@@ -35,6 +35,15 @@ ZAURU_HEADER_USER_EMAIL=pruebas@zauru.com
 ZAURU_HEADER_USER_TOKEN=SOsdfpSPDSpsosFUFJ
 AWS_GLUE_JOB_NAME=glue-test-job
 ```
+### Pruebas desde el Serverless Framework
+
+Se colocó un evento de prueba en el código con el archivo ``event.json`` ese archivo se puede utilizar para probar el evento de la siguiente forma:
+
+```
+serverless invoke local --function s3fileparser --path event.json
+```
+
+> Hay que refactorizar el código para separar la integración con los servicios AWS y que podamos pegar cualquier servicio ficticio para que podamos probarlo localmente... ver https://serverless.com/framework/docs/providers/aws/guide/testing
 
 ## Configuración de AWS S3 para que haga trigger esta función
 
