@@ -72,7 +72,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "email": user, 
                 "uuid": id,
                 "entity_id": entity,
-                "status": "PASO 1) archivo original recibido", 
+                "status": "PASO 1 de 9) archivo original recibido", 
                 "source": "Pre-Glue lambda (XML -> JSON)",
                 "percentage_completed": "10"
               }
@@ -154,7 +154,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                               postdata = {
                                 "external_id" : data.JobRunId,
                                 "source": "Pre-Glue lambda (XML -> JSON)", 
-                                "status": "PASO 2) archivo movido y convertido y el JOB Glue ya se llamó", 
+                                "status": "PASO 2 de 9) archivo movido y convertido y el JOB Glue ya se llamó", 
                                 "percentage_completed": "30"
                               };
 
@@ -215,7 +215,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                 "email": user, 
                 "uuid": id, 
                 "entity_id": entity,
-                "status": "PASO 1) archivo original recibido", 
+                "status": "PASO 1 de 9) archivo original recibido", 
                 "source": "Pre-Glue lambda (CSV)",
                 "percentage_completed": "10"
               }
@@ -289,7 +289,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                                   {
                                     "external_id": data.JobRunId,
                                     "source": "Pre-Glue lambda (CSV)", 
-                                    "status": "PASO 2) archivo movido y el JOB Glue ya se llamó", 
+                                    "status": "PASO 2 de 9) archivo movido y el JOB Glue ya se llamó", 
                                     "percentage_completed": "30"
                                   }
                               };
