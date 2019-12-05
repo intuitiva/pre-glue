@@ -9,7 +9,6 @@ const xml2js = require('xml2js');
 
 const fs = require('fs');
 
-
 //Define the XML parser
 var parser = new xml2js.Parser({ignoreAttrs : false, mergeAttrs : true, explicitArray : false});
 
@@ -24,9 +23,10 @@ module.exports.s3fileparser = (event, context, callback) => {
 
     console.log("Event ==>" + JSON.stringify(event))
 
-    var id = uuid.v1();//Create Unique ID
+    // Create Unique ID
+    var id = uuid.v1();
 
-    //Get S3 information     
+    // Get S3 information     
     var s3bucket = event.Records[0].s3.bucket.name;
     var s3filekey = event.Records[0].s3.object.key;
     s3filekey = decodeURIComponent(s3filekey.replace(/\+/g, ' '))
@@ -35,7 +35,7 @@ module.exports.s3fileparser = (event, context, callback) => {
 
     var s3params = { Bucket: s3bucket, Key: s3filekey };//Set S3 Parameters
 
-    //Set the Headers for REST API Request
+    // Set the Headers for REST API Request
     var headersdata = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -43,10 +43,9 @@ module.exports.s3fileparser = (event, context, callback) => {
             'X-User-Token': process.env.ZAURU_HEADER_USER_TOKEN
           };
 
-    //Finally get the HEAD for the S3 Object
+    // Finally get the HEAD for the S3 Object
     var head = await s3.headObject(s3params).promise();
-    if(head && head.Metadata)
-    {
+    if (head && head.Metadata) {
       let file_public_url = "https://" + s3bucket + ".s3.amazonaws.com/" + s3filekey;
       let usertoken = ((head.Metadata.token) ? head.Metadata.token : "");
       let user = ((head.Metadata.user) ? head.Metadata.user : "");
@@ -205,7 +204,7 @@ module.exports.s3fileparser = (event, context, callback) => {
 
       else if(s3filename.search(".txt") > -1)
       {
-        //POSTING DATA to ZAURU
+        // POSTING DATA to ZAURU
         var postdata = {
             "data_import_job": 
               {
@@ -228,115 +227,118 @@ module.exports.s3fileparser = (event, context, callback) => {
           url: process.env.ZAURU_POST_URL
         };
 
-        //Calling POST API
+        // Calling POST API
         axios(options).then(function (response) { // If successfully called POST API
 
           console.log("1). POST to Zauru API success!")
            
-          //READ FILE FROM S3
-          let file = fs.createWriteStream("/tmp/"+ s3filename);
-          s3.getObject(s3params).createReadStream().pipe(file);
+          // READ FILE FROM S3
+          // let file = fs.createWriteStream("/tmp/"+ s3filename);
+          // s3.getObject(s3params).createReadStream().pipe(file);
 
-          //Callback for S3 Success Operation
-          file.on('close', async function(){
+          // Callback for S3 Success Operation
+          // file.on('close', async function() {
 
-            console.log('2) S3 file read and downloaded == ' + "/tmp/"+s3filename);
+            // console.log('2) S3 file read and downloaded == ' + "/tmp/"+s3filename);
 
-              //Read Downloaded File and Upload to S3 Destination bucket
-              fs.readFile("/tmp/"+ s3filename, function(err, data) {
+              // Read Downloaded File and Upload to S3 Destination bucket
+              // fs.readFile("/tmp/"+ s3filename, function(err, data) {
 
-                      s3.putObject({ Bucket: process.env.AWS_S3_BUCKET_DESTINATION, 
-                          Key: s3filekey, Body: data }, function(err, data) {
-                          console.log('3) Uploaded CSV file to new destination')
+                // s3.putObject({ Bucket: process.env.AWS_S3_BUCKET_DESTINATION, 
+                    // Key: s3filekey, Body: data }, function(err, data) {
+                    // console.log('3) Uploaded CSV file to new destination')
 
-                          //Trigger AWS Glue Job
-                          glue.startJobRun({ JobName: process.env.AWS_GLUE_JOB_NAME }, async function(err, data) {
-                            if (err) {
-                              console.log("glue.startJobRun > " + err.stack); // an error occurred
-                              //Call PUT api
-                              var putdata = {
-                                "data_import_job": 
-                                  {
-                                    "source": "Pre-Glue lambda (CSV)", 
-                                    "status": "ERROR: glue.startJobRun > "+err.stack, 
-                                    "percentage_completed": "30",
-                                    "is_error": true
-                                  }
-                              };
+                    //Trigger AWS Glue Job
+                    glue.startJobRun(
+                      { JobName: process.env.AWS_GLUE_JOB_NAME,
+                        Arguments:{
+                          job_uuid: id,
+                          raw_file: file_public_url,
+                          entity_id: entity
+                        }
+                      }, async function(err, data) {
+                        if (err) {
+                          console.log("glue.startJobRun > " + err.stack); // an error occurred
+                          //Call PUT api
+                          var putdata = {
+                            "data_import_job": 
+                              {
+                                "source": "Pre-Glue lambda (CSV)", 
+                                "status": "ERROR: glue.startJobRun > "+err.stack, 
+                                "percentage_completed": "30",
+                                "is_error": true
+                              }
+                          };
 
-                              options.data = putdata;
-                              options.url = process.env.ZAURU_PUT_URL + id + ".json";
-                              options.method = "PUT";
+                          options.data = putdata;
+                          options.url = process.env.ZAURU_PUT_URL + id + ".json";
+                          options.method = "PUT";
 
-                              //Call PUT API
-                              await axios(options)
-                              .then(function (response) {
+                          //Call PUT API
+                          await axios(options)
+                          .then(function (response) {
 
-                                console.log("PUT API Success")
-                                callback(null, "Successfully Done!")
-                              })
-                              .catch(function (error) { //If error
-                                console.log(error);
-                                callback(null, "Error")
-                              });
-                            }
-                            else
-                            {
-                              console.log(data);           // successful response  
-                              //Call PUT api
-                              var putdata = {
-                                "data_import_job": 
-                                  {
-                                    "external_id": data.JobRunId,
-                                    "source": "Pre-Glue lambda (CSV)", 
-                                    "status": "PASO 2 de 9) archivo movido y el JOB Glue ya se llamó", 
-                                    "percentage_completed": "30"
-                                  }
-                              };
-
-                              options.data = putdata;
-                              options.url = process.env.ZAURU_PUT_URL + id + ".json";
-                              options.method = "PUT";
-
-                              //Call PUT API
-                              await axios(options)
-                              .then(function (response) {
-
-                                console.log("PUT API Success")
-                                callback(null, "Successfully Done!")
-                              })
-                              .catch(function (error) { // If error
-                                console.log(error);
-                                callback(null, "Error")
-                              });
-                            }
-
+                            console.log("PUT API Success")
+                            callback(null, "Successfully Done!")
+                          })
+                          .catch(function (error) { //If error
+                            console.log(error);
+                            callback(null, "Error")
                           });
+                        } else {
+                          console.log(data);           // successful response  
+                          //Call PUT api
+                          var putdata = {
+                            "data_import_job": 
+                              {
+                                "external_id": data.JobRunId,
+                                "source": "Pre-Glue lambda (CSV)", 
+                                "status": "PASO 2 de 9) archivo movido y el JOB Glue ya se llamó", 
+                                "percentage_completed": "30"
+                              }
+                          };
 
-                      });
+                          options.data = putdata;
+                          options.url = process.env.ZAURU_PUT_URL + id + ".json";
+                          options.method = "PUT";
 
-              });
+                          //Call PUT API
+                          await axios(options).then(function (response) {
+                            console.log("PUT API Success")
+                            callback(null, "Successfully Done!")
+                          })
+                          .catch(function (error) { // If error
+                            console.log(error);
+                            callback(null, "Error")
+                          });
+                        }
+                      }); // glue.startJobRun
 
-          })
+                    //}); // S3.putObject
 
-          file.on('error', function(err) {//If error
-            console.log(err);
-            callback(null, "Error")
-          });
+              //}); //fs.ReadFile
+
+          //}) // file.on('close'
+
+          //file.on('error', function(err) {//If error
+          //  console.log(err);
+          //  callback(null, "Error")
+          //});
            
 
-        })
-        .catch(function (error) {//If error
+        }) // axios().then
+        .catch(function (error) { //If error
           console.log(error);
           callback(null, "Error")
         });
       }
 
-    }//End of If Conditon of Head metadata
-    else{
+    } //if (head && head.Metadata)
+    else 
+    {
       callback(null, "No Metadata found")
     }
 
-  });
+  }); // myPromise
 };
 
