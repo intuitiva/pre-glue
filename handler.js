@@ -252,9 +252,9 @@ module.exports.s3fileparser = (event, context, callback) => {
                     glue.startJobRun(
                       { JobName: process.env.AWS_GLUE_JOB_NAME,
                         Arguments:{
-                          job_uuid: id,
-                          raw_file: file_public_url,
-                          entity_id: entity
+                          '--job_uuid': id,
+                          '--raw_file': file_public_url,
+                          '--entity_id': entity
                         }
                       }, async function(err, data) {
                         if (err) {
