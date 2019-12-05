@@ -47,6 +47,7 @@ module.exports.s3fileparser = (event, context, callback) => {
     var head = await s3.headObject(s3params).promise();
     if (head && head.Metadata) {
       let file_public_url = "https://" + s3bucket + ".s3.amazonaws.com/" + s3filekey;
+      let s3_public_url = "s3://" + s3bucket + "/" + s3filekey;
       let usertoken = ((head.Metadata.token) ? head.Metadata.token : "");
       let user = ((head.Metadata.user) ? head.Metadata.user : "");
       let entity = ((head.Metadata.entity) ? head.Metadata.entity : "")
@@ -253,7 +254,7 @@ module.exports.s3fileparser = (event, context, callback) => {
                       { JobName: process.env.AWS_GLUE_JOB_NAME,
                         Arguments:{
                           '--job_uuid': id,
-                          '--raw_file': file_public_url,
+                          '--raw_file': s3_public_url,
                           '--entity_id': entity
                         }
                       }, async function(err, data) {
