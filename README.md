@@ -18,7 +18,7 @@ Este proyecto está hecho como una GRAN función AWS lambda en Node.js donde se 
 ## Deploy con Serverless Framework
 1. npm install
 2. configurar .env (ejemplo en el siguiente punto)
-2. serverless deploy
+3. serverless deploy (para dev) o serveless deploy --stage production (para prod)
 
 > Gracias al Serverless Framework, en donde los permisos IAM se definen en el código, no hay que configurar nada para poder subir el código. Solo tenemos que asegurarnos que el .env esté correcto (siguiente punto)
 

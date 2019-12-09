@@ -20,6 +20,7 @@ service: tres-pumas-pre-glue # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs8.10
+  ragion: us-east-1
 
 # you can overwrite defaults here
 #  stage: dev
