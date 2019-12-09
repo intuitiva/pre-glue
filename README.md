@@ -35,6 +35,9 @@ ZAURU_HEADER_USER_EMAIL=pruebas@zauru.com
 ZAURU_HEADER_USER_TOKEN=SOsdfpSPDSpsosFUFJ
 AWS_GLUE_JOB_NAME=glue-test-job
 ```
+
+Si hay necesidad, estas variables se pueden editar desde la funcion lambda en la consola AWS.
+
 ### Pruebas desde el Serverless Framework
 
 Se colocó un evento de prueba en el código con el archivo ``event.json`` ese archivo se puede utilizar para probar el evento de la siguiente forma:
