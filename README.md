@@ -57,4 +57,4 @@ serverless invoke local --function s3fileparser --path event.json
 5. En "Enviar a" seleccionar "Función de Lambda"
 6. Seleccionar en "Lambda" esta función.
 
-Licencia ISC
+Licencia MIT
